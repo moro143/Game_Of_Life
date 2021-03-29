@@ -1,6 +1,4 @@
 import numpy as np
-import time
-import os
 import pygame
 import random
 
@@ -51,49 +49,42 @@ class GameOfLife:
         for i in change:
             self.change_cell(i[0], i[1])
 
-    def draw(self, size):
-        for i in range(self.row):
-            for j in range(self.col):
-                if self.board[i][j]==1:
-                    pygame.draw.rect(screen, (0, 255, 0),((size[0]/self.row*i), int(size[0]/self.row*j), (size[0]/self.row),int(size[0]/self.row)))
+    def draw(self, size, rand_a=10, rand_b=100,color=(0, 255, 0), bgcolor=(0,0,0), frames=10):
+        pygame.init()
+        screen = pygame.display.set_mode(size)
+        running = True
+        create = True
+        clock = pygame.time.Clock()
+        while running:
+            screen.fill(bgcolor)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if create:
+                            create=False
+                            print("Create")
+                        else:
+                            create=True
+                            print("Simulating")
+                    if event.key == pygame.K_r:
+                        self.randomize(rand_a, rand_b)
 
-pygame.init()
-size = (1000, 1000)
-
-screen = pygame.display.set_mode(size)
-running = True
+                if event.type == pygame.MOUSEBUTTONUP:
+                    pos = pygame.mouse.get_pos()
+                    self.change_cell(int(pos[0]/size[0]*self.row), int(pos[1]/size[1]*self.col))
+            for i in range(self.row):
+                for j in range(self.col):
+                    if self.board[i][j]==1:
+                        pygame.draw.rect(screen, color,((size[0]/self.row*i), int(size[0]/self.row*j), (size[0]/self.row),int(size[0]/self.row)))
+            
+            pygame.display.update()
+    
+            if not create:
+                self.step()        
+                clock.tick(frames)
 
 test = GameOfLife(100,100)
-
-clock = pygame.time.Clock()
-
-create = True
-while running:
-    screen.fill((0,0,0))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                if create:
-                    create=False
-                    print("Create")
-                else:
-                    create=True
-                    print("Simulating")
-            if event.key == pygame.K_r:
-                test.randomize(100, 1000000)
-
-        if event.type == pygame.MOUSEBUTTONUP:
-            pos = pygame.mouse.get_pos()
-            test.change_cell(int(pos[0]/size[0]*test.row), int(pos[1]/size[1]*test.col))
-
-    test.draw(size)
-    
-    pygame.display.update()
-    
-    if not create:
-        test.step()        
-        clock.tick(60)
+test.draw((1000,1000))
