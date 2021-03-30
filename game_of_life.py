@@ -2,6 +2,8 @@ import numpy as np
 import pygame
 import random
 
+from pygame.constants import MOUSEBUTTONDOWN
+
 class GameOfLife:
     def __init__(self, row, col):
         self.row = row
@@ -55,13 +57,15 @@ class GameOfLife:
         running = True
         create = True
         clock = pygame.time.Clock()
+        drawing = False
+        last = []
         while running:
             screen.fill(bgcolor)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-                if event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         if create:
                             create=False
@@ -72,9 +76,21 @@ class GameOfLife:
                     if event.key == pygame.K_r:
                         self.randomize(rand_a, rand_b)
 
-                if event.type == pygame.MOUSEBUTTONUP:
-                    pos = pygame.mouse.get_pos()
-                    self.change_cell(int(pos[0]/size[0]*self.row), int(pos[1]/size[1]*self.col))
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    drawing = False
+                    last = []
+
+                elif event.type == pygame.MOUSEMOTION:
+                    if (drawing):
+                        pos = pygame.mouse.get_pos()
+                        xy = [int(pos[0]/size[0]*self.row), int(pos[1]/size[1]*self.col)]
+                        if xy not in last:
+                            self.change_cell(xy[0], xy[1])
+                            last.append(xy)
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    drawing = True
+
             for i in range(self.row):
                 for j in range(self.col):
                     if self.board[i][j]==1:
@@ -86,5 +102,5 @@ class GameOfLife:
                 self.step()        
                 clock.tick(frames)
 
-test = GameOfLife(100,100)
-test.draw((1000,1000))
+test = GameOfLife(100, 100)
+test.draw((1000,1000),1000,10000)
